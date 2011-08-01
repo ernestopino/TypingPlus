@@ -1,2 +1,2 @@
 ##TYPING+
-Curso de Mecanografía Online - Full Flash App
+Curso de Mecanografía Online - Framework Full Flash App
