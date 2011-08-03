@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<app>
+	<name><![CDATA[Typing+]]></name>
+	<version><![CDATA[1.0.0]]></version>
+	<author>
+		<name><![CDATA[Ernesto]]></name>
+		<lastname><![CDATA[Pino Martinez]]></lastname>
+		<alias><![CDATA[epinom]]></alias>
+		<email><![CDATA[info@epinom.com]]></email>
+		<web><![CDATA[http://www.epinom.com]]></web>		
+	</author>
+	<owner>
+		<name><![CDATA[epinom | Technology, Creativity and Communication]]></name> 
+		<web><![CDATA[http://www.epinom.com]]></web>	
+	</owner>
+	<resolution width="760" height="768"/>	
+	<sounds>
+	</sounds>
+	<components>
+		<component>
+			<type><![CDATA[MovieClip]]></type>
+			<className><![CDATA[BlackBackground]]></className>
+			<instanceName><![CDATA[blackBackground]]></instanceName>
+			<visible><![CDATA[true]]></visible>
+			<hashId><![CDATA[blackBackground]]></hashId>	
+			<url><![CDATA[]]></url>
+			<changeSize><![CDATA[true]]></changeSize>
+			<percentageWidth><![CDATA[100]]></percentageWidth>
+			<percentageHeight><![CDATA[100]]></percentageHeight>
+			<changePositionX><![CDATA[true]]></changePositionX>
+			<changePositionY><![CDATA[true]]></changePositionY>
+			<percentageX><![CDATA[50]]></percentageX>
+			<percentageY><![CDATA[50]]></percentageY>
+			<centralReference><![CDATA[false]]></centralReference>
+			<elementOrder><![CDATA[-1]]></elementOrder>
+			<yPosition><![CDATA[-1]]></yPosition>
+			<percentagePadding><![CDATA[false]]></percentagePadding>
+			<paddingTop><![CDATA[-1]]></paddingTop>
+			<paddingBottom><![CDATA[-1]]></paddingBottom>
+			<paddingLeft><![CDATA[-1]]></paddingLeft>
+			<paddingRight><![CDATA[-1]]></paddingRight>
+		</component>
+	</components>
+</app>
