@@ -9,8 +9,8 @@
 
 package com.epinom.typingplus.controllers
 {
-	import com.epinom.typingplus.models.TPDataModel;
 	import com.epinom.typingplus.data.TPHashMap;
+	import com.epinom.typingplus.models.TPDataModel;
 	import com.epinom.typingplus.objects.TPInterfaceObject;
 	
 	import flash.display.Sprite;
@@ -38,7 +38,7 @@ package com.epinom.typingplus.controllers
 		 * @property
 		 * Lista de objetos que se encuentran en pantalla
 		 */
-		private var _hashMap:HashMap;
+		private var _hashMap:TPHashMap;
 		
 		/**
 		 * @property
@@ -69,13 +69,13 @@ package com.epinom.typingplus.controllers
 			trace("TPStageController->TPStageController()");
 			
 			// Obteniendo referencia al escenario principal
-			_stage = DataModel.getInstance().stage;
+			_stage = TPDataModel.getInstance().stage;
 			
 			// Inicializando propiedades
 			_stage.align = StageAlign.TOP_LEFT;
 			_stage.scaleMode = StageScaleMode.NO_SCALE;
 			_stage.addEventListener(Event.RESIZE, onResizeHandler);
-			_hashMap = new HashMap();			
+			_hashMap = new TPHashMap();			
 		}
 		
 		/**
@@ -132,7 +132,7 @@ package com.epinom.typingplus.controllers
 			// Posicionando del objeto
 			locateObject(object);	
 			if (visualObject)
-				_stage.addChild((object as InterfaceObject).interactiveObject);	
+				_stage.addChild((object as TPInterfaceObject).interactiveObject);	
 		}
 		
 		/**
@@ -141,9 +141,9 @@ package com.epinom.typingplus.controllers
 		 * 
 		 * @param	idHash		Identificador del objeto en la tabla hash
 		 */
-		public function removeObject(idHash:String, removeFromStage:Boolean = true):InterfaceObject
+		public function removeObject(idHash:String, removeFromStage:Boolean = true):TPInterfaceObject
 		{
-			var io:InterfaceObject = getItemAt(idHash) as InterfaceObject;
+			var io:TPInterfaceObject = getItemAt(idHash) as TPInterfaceObject;
 			if(removeFromStage == true)
 				_stage.removeChild(io.interactiveObject);
 			_hashMap.remove(idHash);
@@ -160,7 +160,7 @@ package com.epinom.typingplus.controllers
 		public function getItemAt(idHash:String):*
 		{
 			// Devuelve el objeto asociado a dicha clave
-			var object:InterfaceObject = _hashMap.getValue(idHash);
+			var object:TPInterfaceObject = _hashMap.getValue(idHash);
 			return object;
 		}
 		
@@ -173,7 +173,7 @@ package com.epinom.typingplus.controllers
 		public function visualizeObject(idHash:String):void
 		{
 			var object:* = _hashMap.getValue(idHash);
-			_stage.addChild((object as InterfaceObject).interactiveObject);	
+			_stage.addChild((object as TPInterfaceObject).interactiveObject);	
 		}			
 		
 		/**
@@ -186,8 +186,8 @@ package com.epinom.typingplus.controllers
 		{
 			//trace("TPStageController->locateObject()");
 			
-			// Conviertiendo el objeto generico en un InterfaceObject
-			var object:InterfaceObject = object as InterfaceObject;				
+			// Conviertiendo el objeto generico en un TPInterfaceObject
+			var object:TPInterfaceObject = object as TPInterfaceObject;				
 			
 			// Si el objeto no ha sido posicionado la primera vez
 			if (!object.positionInitialized) 
