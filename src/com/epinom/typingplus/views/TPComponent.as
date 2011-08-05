@@ -11,7 +11,7 @@ package com.epinom.typingplus.views
 		private var _io:TPInterfaceObject;
 		private var _displayObject:DisplayObject;
 		
-		public function VetustaComponent(vo:TPComponentVO, io:TPInterfaceObject, displayObject:DisplayObject)
+		public function TPComponent(vo:TPComponentVO, io:TPInterfaceObject, displayObject:DisplayObject)
 		{
 			_vo = vo;
 			_io = io;

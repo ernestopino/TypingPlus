@@ -19,14 +19,14 @@
 	<components>
 		<component>
 			<type><![CDATA[MovieClip]]></type>
-			<className><![CDATA[BlackBackground]]></className>
-			<instanceName><![CDATA[blackBackground]]></instanceName>
+			<className><![CDATA[com.epinom.typingplus.controllers.TPLogin]]></className>
+			<instanceName><![CDATA[tpLogin]]></instanceName>
 			<visible><![CDATA[true]]></visible>
-			<hashId><![CDATA[blackBackground]]></hashId>	
+			<hashId><![CDATA[com.epinom.typingplus.controllers.TPLogin]]></hashId>	
 			<url><![CDATA[]]></url>
-			<changeSize><![CDATA[true]]></changeSize>
-			<percentageWidth><![CDATA[100]]></percentageWidth>
-			<percentageHeight><![CDATA[100]]></percentageHeight>
+			<changeSize><![CDATA[false]]></changeSize>
+			<percentageWidth><![CDATA[-1]]></percentageWidth>
+			<percentageHeight><![CDATA[-1]]></percentageHeight>
 			<changePositionX><![CDATA[true]]></changePositionX>
 			<changePositionY><![CDATA[true]]></changePositionY>
 			<percentageX><![CDATA[50]]></percentageX>

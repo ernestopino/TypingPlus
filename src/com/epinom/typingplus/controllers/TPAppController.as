@@ -1,5 +1,7 @@
 package com.epinom.typingplus.controllers
 {
+	import caurina.transitions.Tweener;
+	
 	import com.digitalsurgeons.loading.BulkLoader;
 	import com.digitalsurgeons.loading.BulkProgressEvent;
 	import com.epinom.typingplus.models.TPDataModel;
@@ -12,6 +14,7 @@ package com.epinom.typingplus.controllers
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;
 	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.external.ExternalInterface;
 	import flash.net.LocalConnection;
@@ -20,7 +23,7 @@ package com.epinom.typingplus.controllers
 	import flash.system.System;
 	import flash.utils.getDefinitionByName;
 
-	public class TPAppController extends MovieClip
+	public class TPAppController extends Sprite
 	{
 		/**
 		 * @property
@@ -61,8 +64,10 @@ package com.epinom.typingplus.controllers
 		 * @property
 		 * Variables que se utilizaran como referencias de objetos visuales
 		 */						
-		private var typingPlusVisualLoader:MovieClip;	
-		private var typingPlusVisualLoader_io:TPInterfaceObject;
+		private var tpVisualLoader:MovieClip;	
+		private var tpVisualLoader_io:TPInterfaceObject;
+		private var tpLogin:MovieClip;	
+		private var tpLogin_io:TPInterfaceObject;
 		
 		public function TPAppController()
 		{
@@ -70,6 +75,7 @@ package com.epinom.typingplus.controllers
 			trace("TPAppController->TPAppController()");
 			
 			// Declarando metodos para ser ejecutados desde JavaScript
+			/*
 			if (ExternalInterface.available) 
 			{
 				try {
@@ -88,15 +94,10 @@ package com.epinom.typingplus.controllers
 			} else {
 				debug("Flash: External interface is not available for this container.");
 			}
+			*/
 			
 			// Sistema de codificacion
 			System.useCodePage = true;
-			
-			// Actualizando la referencia al escenario de la pelicula principal
-			TPDataModel.getInstance().stage = stage;
-			
-			// Inicializando Controlador de Escencario
-			TPStageController.getInstance();
 			
 			// Configurando seguridad de la aplicacion
 			if(!TPDataModel.APP_RUN_IN_LOCAL)
@@ -144,13 +145,45 @@ package com.epinom.typingplus.controllers
 			bulkLoader.logLevel = BulkLoader.LOG_INFO;
 			
 			// Estableciendo URL del fichero de configuracion
-			if(TPDataModel.APP_RUN_IN_LOCAL)
-				TPDataModel.getInstance().settings.settingsXMLLocation = TPDataModel.XML_SETTINGS_FILE;
-			else
-				TPDataModel.getInstance().settings.settingsXMLLocation = TPDataModel.URL_BASE_DOMAIN + TPDataModel.XML_SETTINGS_FILE;
+			if(TPDataModel.APP_RUN_IN_LOCAL) TPDataModel.getInstance().settings.settingsXMLLocation = TPDataModel.XML_SETTINGS_FILE;
+			else TPDataModel.getInstance().settings.settingsXMLLocation = TPDataModel.URL_BASE_DOMAIN + TPDataModel.XML_SETTINGS_FILE;
 			
 			// Configurando detectores de eventos
 			this.loaderInfo.addEventListener(Event.COMPLETE, onAppSWFLoaderComplete);	
+		}
+		
+		private function buildInterface():void
+		{
+			// LOGIN 
+			
+			// Creo un objeto de tipo Class para luego crear objetos del tipo del className cargado por xml
+			var tpLoginVO:TPComponentVO = TPDataModel.getInstance().settings.getComponentByHash(TPDataModel.TP_COMPONENT_LOGIN_HASH_ID);					
+			
+			// Creo una clase correspondiente al objeto en la biblioteca del swf
+			var TPLogin:Class = mainMovieClip.loaderInfo.applicationDomain.getDefinition(tpLoginVO.className) as Class;
+			
+			// Creo un objetos de tipo BlackBackground
+			tpLogin = new TPLogin();
+			
+			// Creo objetos de tipo InterfaceObject
+			tpLogin_io = new TPInterfaceObject(tpLogin,
+				tpLoginVO.className,
+				tpLoginVO.instanceName,
+				tpLoginVO.hashId,
+				tpLoginVO.changeSize,
+				tpLoginVO.percentageWidth,
+				tpLoginVO.percentageHeight,
+				tpLoginVO.changePositionX,
+				tpLoginVO.changePositionY,
+				tpLoginVO.percentageX,
+				tpLoginVO.percentageY);		
+			
+			// Agregando objeto al escenario
+			TPStageController.getInstance().addObject(tpLoginVO.hashId, tpLogin_io, tpLoginVO.visible);			
+			
+			// Actualizando modelo de datos
+			var tpLoginComponent:TPComponent = new TPComponent(tpLoginVO, tpLogin_io, tpLogin);
+			TPDataModel.getInstance().componentList.push(tpLoginComponent);
 		}
 		
 		/**
@@ -161,6 +194,12 @@ package com.epinom.typingplus.controllers
 		{	
 			trace("TPAppController->onLoaderComplete()");
 			
+			// Actualizando la referencia al escenario de la pelicula principal
+			TPDataModel.getInstance().stage = this.stage;
+			
+			// Inicializando Controlador de Escencario
+			TPStageController.getInstance();
+			
 			// Obteniendo flashvars
 			flashvars = (this.root.loaderInfo as LoaderInfo).parameters;
 			
@@ -170,56 +209,56 @@ package com.epinom.typingplus.controllers
 			}
 			
 			// Creando objeto de datos referente al loader visual
-			var typingPlusVisualLoaderVO:TPComponentVO = new TPComponentVO();
-			typingPlusVisualLoaderVO.type = "MovieClip";
-			typingPlusVisualLoaderVO.className = "TPVisualLoader";
-			typingPlusVisualLoaderVO.instanceName = "typingPlusVisualLoader";
-			typingPlusVisualLoaderVO.visible = true;
-			typingPlusVisualLoaderVO.hashId = "typingPlusVisualLoader";
-			typingPlusVisualLoaderVO.url = "";
-			typingPlusVisualLoaderVO.changeSize = false;
-			typingPlusVisualLoaderVO.percentageWidth = -1;
-			typingPlusVisualLoaderVO.percentageHeight = -1;
-			typingPlusVisualLoaderVO.changePositionX = true;
-			typingPlusVisualLoaderVO.changePositionY = true;
-			typingPlusVisualLoaderVO.percentageX = 50;
-			typingPlusVisualLoaderVO.percentageY = 50;
-			typingPlusVisualLoaderVO.centralReference = false;
-			typingPlusVisualLoaderVO.elementOrder = -1;
-			typingPlusVisualLoaderVO.yPosition = -1;
-			typingPlusVisualLoaderVO.percentagePadding = false;
-			typingPlusVisualLoaderVO.paddingTop = -1;
-			typingPlusVisualLoaderVO.paddingBottom = -1;
-			typingPlusVisualLoaderVO.paddingLeft = -1;
-			typingPlusVisualLoaderVO.paddingRight = -1;
+			var tpVisualLoaderVO:TPComponentVO = new TPComponentVO();
+			tpVisualLoaderVO.type = "MovieClip";
+			tpVisualLoaderVO.className = "TPVisualLoader";
+			tpVisualLoaderVO.instanceName = "tpVisualLoader";
+			tpVisualLoaderVO.visible = true;
+			tpVisualLoaderVO.hashId = "tpVisualLoader";
+			tpVisualLoaderVO.url = "";
+			tpVisualLoaderVO.changeSize = false;
+			tpVisualLoaderVO.percentageWidth = -1;
+			tpVisualLoaderVO.percentageHeight = -1;
+			tpVisualLoaderVO.changePositionX = true;
+			tpVisualLoaderVO.changePositionY = true;
+			tpVisualLoaderVO.percentageX = 50;
+			tpVisualLoaderVO.percentageY = 50;
+			tpVisualLoaderVO.centralReference = false;
+			tpVisualLoaderVO.elementOrder = -1;
+			tpVisualLoaderVO.yPosition = -1;
+			tpVisualLoaderVO.percentagePadding = false;
+			tpVisualLoaderVO.paddingTop = -1;
+			tpVisualLoaderVO.paddingBottom = -1;
+			tpVisualLoaderVO.paddingLeft = -1;
+			tpVisualLoaderVO.paddingRight = -1;
 			
 			
 			// Creando un objeto de tipo Class para luego crear objetos del tipo del className cargado por xml
-			var TPVisualLoader:Class = getDefinitionByName(typingPlusVisualLoaderVO.className) as Class;
+			var TPVisualLoader:Class = getDefinitionByName(tpVisualLoaderVO.className) as Class;
 			
 			// Creando objeto de tipo BtobLoader
-			vetustaVisualLoader = new TPVisualLoader();
-			vetustaVisualLoader.name = typingPlusVisualLoaderVO.instanceName;
+			tpVisualLoader = new TPVisualLoader();
+			tpVisualLoader.name = tpVisualLoaderVO.instanceName;
 			
 			// Creo un objeto de tipo InterfaceObject
-			typingPlusVisualLoader_io = new TPInterfaceObject(vetustaVisualLoader,
-				typingPlusVisualLoaderVO.className,
-				typingPlusVisualLoaderVO.instanceName,
-				typingPlusVisualLoaderVO.hashId,
-				typingPlusVisualLoaderVO.changeSize,
-				typingPlusVisualLoaderVO.percentageWidth,
-				typingPlusVisualLoaderVO.percentageHeight,
-				typingPlusVisualLoaderVO.changePositionX,
-				typingPlusVisualLoaderVO.changePositionY,
-				typingPlusVisualLoaderVO.percentageX,
-				typingPlusVisualLoaderVO.percentageY);	
+			tpVisualLoader_io = new TPInterfaceObject(tpVisualLoader,
+				tpVisualLoaderVO.className,
+				tpVisualLoaderVO.instanceName,
+				tpVisualLoaderVO.hashId,
+				tpVisualLoaderVO.changeSize,
+				tpVisualLoaderVO.percentageWidth,
+				tpVisualLoaderVO.percentageHeight,
+				tpVisualLoaderVO.changePositionX,
+				tpVisualLoaderVO.changePositionY,
+				tpVisualLoaderVO.percentageX,
+				tpVisualLoaderVO.percentageY);	
 			
 			// Agregando objeto al escenario
-			TPStageController.getInstance().addObject(typingPlusVisualLoaderVO.hashId, typingPlusVisualLoader_io, typingPlusVisualLoaderVO.visible);
+			TPStageController.getInstance().addObject(tpVisualLoaderVO.hashId, tpVisualLoader_io, tpVisualLoaderVO.visible);
 			
 			// Actualizando modelo de datos
-			var typingPlusVisualLoaderComponent:TPComponent = new TPComponent(typingPlusVisualLoaderVO, typingPlusVisualLoader_io, typingPlusVisualLoader);
-			TPDataModel.getInstance().componentList.push(typingPlusVisualLoaderComponent);
+			var tpVisualLoaderComponent:TPComponent = new TPComponent(tpVisualLoaderVO, tpVisualLoader_io, tpVisualLoader);
+			TPDataModel.getInstance().componentList.push(tpVisualLoaderComponent);
 			
 			// Configurando la carga multiple de los elementos necesario para construir la interfaz
 			
@@ -232,7 +271,8 @@ package com.epinom.typingplus.controllers
 			
 			// Configurando manejadores de eventos independientes para cada elemento
 			bulkLoader.get(TPDataModel.getInstance().settings.settingsXMLLocation).addEventListener(Event.COMPLETE, onXMLSettingsLoaded);
-			bulkLoader.get(TPDataModel.URL_BASE_DOMAIN + TPDataModel.MAIN_SWF_FILE).addEventListener(Event.COMPLETE, onSWFMainLoaded);
+			if(TPDataModel.APP_RUN_IN_LOCAL) bulkLoader.get(TPDataModel.MAIN_SWF_FILE).addEventListener(Event.COMPLETE, onSWFMainLoaded);
+			else bulkLoader.get(TPDataModel.URL_BASE_DOMAIN + TPDataModel.MAIN_SWF_FILE).addEventListener(Event.COMPLETE, onSWFMainLoaded);
 			
 			// Configurando manejadores de eventos globales para todos elementos
 			bulkLoader.addEventListener(BulkLoader.COMPLETE, onBulkElementLoadedHandler);
@@ -282,10 +322,6 @@ package com.epinom.typingplus.controllers
 				bulkLoader.get(TPDataModel.URL_BASE_DOMAIN + TPDataModel.MAIN_SWF_FILE).removeEventListener(Event.COMPLETE, onSWFMainLoaded);
 				mainMovieClip = bulkLoader.getMovieClip(TPDataModel.URL_BASE_DOMAIN + TPDataModel.MAIN_SWF_FILE);
 			}
-			
-			// Recupero el swf cargado (MAIN.SWF)
-			
-			
 		}
 		
 		/**
@@ -301,18 +337,17 @@ package com.epinom.typingplus.controllers
 			bulkLoader.removeEventListener(BulkLoader.PROGRESS, onBulkElementProgressHandler);	
 			bulkLoader.removeEventListener(BulkLoader.ERROR, onErrorHandler);
 			
-			/*
 			// Realizando animacion del objeto de loader visual
-			Tweener.addTween(vetustaVisualLoader, {alpha:0, time:1, transition:"easeOutCubic", onComplete:removeLoader});	
-			
-			// Visualizando wizard
-			wizardModalWindow.visible = true;
-			*/
+			Tweener.addTween(tpVisualLoader, {alpha:0, time:1, transition:"easeOutCubic", onComplete:removeLoader});	
 		}
 		
-		private function removeLoader():void {
+		private function removeLoader():void 
+		{
 			trace("Eliminando loader visual del escenario...");
-			//StageManager.getInstance().removeObject(DataModel.COMPONENT_VISUAL_LOADER_HASH);					
+			TPStageController.getInstance().removeObject(tpVisualLoader_io.hashId);
+			
+			// Contruyendo interfaz
+			buildInterface();
 		}
 		
 		
@@ -322,12 +357,11 @@ package com.epinom.typingplus.controllers
 		 */
 		public function onBulkElementProgressHandler(evt:BulkProgressEvent):void 
 		{	
-			/*
 			var percent:uint = Math.floor((evt.totalPercentLoaded) * 100) ;
-			vetustaVisualLoader.bar_mc.gotoAndStop(percent);
+			tpVisualLoader.bar.gotoAndStop(percent);
+			tpVisualLoader.percentage_dtxt.text = percent.toString();
 			if(evt.bytesLoaded == evt.bytesTotal)
-				vetustaVisualLoader.bar_mc.gotoAndStop(100);
-			*/
+				tpVisualLoader.bar.gotoAndStop(100);
 		}								
 		
 		/**

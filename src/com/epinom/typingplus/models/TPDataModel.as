@@ -18,6 +18,8 @@ package com.epinom.typingplus.models
 		public static const MAIN_SWF_FILE:String = "main.swf";
 		public static const APP_BULKLOADER_NAME:String = "appBulkloader";
 		
+		public static const TP_COMPONENT_LOGIN_HASH_ID:String = "com.epinom.typingplus.controllers.TPLogin";
+		
 		/**
 		 * @property
 		 * Instancia de la clase, se instancia una unica vez (Singleton)
