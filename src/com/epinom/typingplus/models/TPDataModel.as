@@ -12,6 +12,8 @@ package com.epinom.typingplus.models
 		 * Constantes
 		 */
 		public static const APP_RUN_IN_LOCAL:Boolean = true;
+		public static const FACEBOOK_APP_ID:String = "137660269655872";
+		public static const FACEBOOK_APP_SECRET:String = "df8a3e04979a6bd70df42ad6b1a89612";
 		public static const URL_BASE_DOMAIN:String = "http://www.epinom.com/apps/facebook/typingplus/";
 		public static const XML_SETTINGS_FILE:String = "settings.xml";
 		public static const APP_SWF_FILE:String = "app.swf";

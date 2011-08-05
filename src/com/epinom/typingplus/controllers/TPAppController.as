@@ -9,6 +9,8 @@ package com.epinom.typingplus.controllers
 	import com.epinom.typingplus.utils.TPXMLParser;
 	import com.epinom.typingplus.views.TPComponent;
 	import com.epinom.typingplus.vos.TPComponentVO;
+	import com.facebook.graph.Facebook;
+	import com.facebook.graph.data.FacebookSession;
 	
 	import flash.display.Bitmap;
 	import flash.display.Loader;
@@ -16,6 +18,7 @@ package com.epinom.typingplus.controllers
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.external.ExternalInterface;
 	import flash.net.LocalConnection;
 	import flash.net.URLRequest;
@@ -154,6 +157,9 @@ package com.epinom.typingplus.controllers
 		
 		private function buildInterface():void
 		{
+			// Inicializando Facebook API
+			Facebook.init(TPDataModel.FACEBOOK_APP_ID, loginHandler);
+			
 			// LOGIN 
 			
 			// Creo un objeto de tipo Class para luego crear objetos del tipo del className cargado por xml
@@ -164,6 +170,7 @@ package com.epinom.typingplus.controllers
 			
 			// Creo un objetos de tipo BlackBackground
 			tpLogin = new TPLogin();
+			tpLogin.addEventListener(MouseEvent.CLICK, onFBLoginButtonHandler);
 			
 			// Creo objetos de tipo InterfaceObject
 			tpLogin_io = new TPInterfaceObject(tpLogin,
@@ -350,6 +357,24 @@ package com.epinom.typingplus.controllers
 			buildInterface();
 		}
 		
+		private function onFBLoginButtonHandler(evt:MouseEvent):void 
+		{
+			debug("TPAppController->onFBLoginButtonHandler()");
+			
+			// Loging into Facebook
+			Facebook.login(loginHandler);
+		}
+		
+		private function loginHandler(session:Object, fail:Object):void
+		{
+			debug("TPAppController->loginHandler()");
+			if(session != null)
+			{
+				var userImageURL:String = Facebook.getImageUrl((session as FacebookSession).uid);
+				debug("userImage: " + userImageURL);
+				
+			} else debug("Login fail...");
+		}
 		
 		/**
 		 * @event
