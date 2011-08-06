@@ -158,7 +158,7 @@ package com.epinom.typingplus.controllers
 		private function buildInterface():void
 		{
 			// Inicializando Facebook API
-			Facebook.init(TPDataModel.FACEBOOK_APP_ID, loginHandler);
+			Facebook.init(TPDataModel.FACEBOOK_APP_ID, onFBInitHandler);
 			
 			// LOGIN 
 			
@@ -170,7 +170,7 @@ package com.epinom.typingplus.controllers
 			
 			// Creo un objetos de tipo BlackBackground
 			tpLogin = new TPLogin();
-			tpLogin.addEventListener(MouseEvent.CLICK, onFBLoginButtonHandler);
+			//tpLogin.addEventListener(MouseEvent.CLICK, onFBLoginButtonHandler);
 			
 			// Creo objetos de tipo InterfaceObject
 			tpLogin_io = new TPInterfaceObject(tpLogin,
@@ -303,7 +303,7 @@ package com.epinom.typingplus.controllers
 			
 			// Obteniendo XML
 			var xmlSettings:XML = bulkLoader.getXML(TPDataModel.getInstance().settings.settingsXMLLocation);
-			debug(xmlSettings);
+			//debug(xmlSettings);
 			
 			// Parseando fichero XML de configuracion
 			TPDataModel.getInstance().settings = TPXMLParser.parseSettingsXML(xmlSettings, TPDataModel.getInstance().settings);
@@ -357,15 +357,28 @@ package com.epinom.typingplus.controllers
 			buildInterface();
 		}
 		
-		private function onFBLoginButtonHandler(evt:MouseEvent):void 
+		private function onLoginButtonHandler(evt:MouseEvent):void 
 		{
 			debug("TPAppController->onFBLoginButtonHandler()");
 			
 			// Loging into Facebook
-			Facebook.login(loginHandler);
+			Facebook.login(onFBLoginHandler);
 		}
 		
-		private function loginHandler(session:Object, fail:Object):void
+		private function onFBInitHandler(success:Object, fail:Object):void
+		{
+			debug("TPAppController->onFBInitHandler()");
+			if (success is FacebookSession)
+			{
+				debug("was a success.");
+			}
+			else
+			{
+				debug("was a failure. See contents of 'fail' object.");
+			}
+		}
+		
+		private function onFBLoginHandler(session:Object, fail:Object):void
 		{
 			debug("TPAppController->loginHandler()");
 			if(session != null)

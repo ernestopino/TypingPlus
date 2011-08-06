@@ -8,16 +8,20 @@
 		<!-- Include FBJSBridge to allow for SWF to Facebook communication. -->
 		<script type="text/javascript" src="FBJSBridge.js"></script>
 		<script type="text/javascript">
-			function embedPlayer() {
-				var flashvars = {};
-				embedSWF("app.swf", "flashContent", "760", "768", "10.0");
-			}
+                var flashvars = {};
+                var params = {};
+                params.allowscriptaccess = "sameDomain";
+                var attributes = {};
+                attributes.id = "flashContent";
+                attributes.name = "flashContent";
+                swfobject.embedSWF("app.swf", "flashContent", "760", "768", "10.0.0", "expressInstall.swf", flashvars, params, attributes);
+        </script>
+		<script type="text/javascript">
 			//Redirect for authorization for application loaded in an iFrame on Facebook.com 
 			function redirect(id,perms,uri) {
 				var params = window.location.toString().slice(window.location.toString().indexOf('?'));
 				top.location = 'https://graph.facebook.com/oauth/authorize?client_id='+id+'&scope='+perms+'&redirect_uri='+uri+params;				 
 			}
-			embedPlayer();
 			FB.Event.subscribe('auth.sessionChange', function(response) {
     			if (response.session) {
      				// A user has logged in, and a new cookie has been saved

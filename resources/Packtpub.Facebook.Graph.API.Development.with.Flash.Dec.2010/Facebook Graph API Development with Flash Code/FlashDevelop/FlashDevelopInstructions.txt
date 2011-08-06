@@ -1,0 +1,4 @@
+There are two folders for each chapter: one with code as it should be at the start of the chapter (so that you can jump in at any point) and one with code as it should be at the end of the chapter (so you can compare yours with it).
+Only chapters 2, 3, 4, 5, and 6 have source code folders.
+To open in FlashDevelop, just open the required folder and load the .as3proj file.
+Problem? Contact me through my site: michaeljameswilliams.com.

@@ -1,0 +1,14 @@
+There are two folders for each chapter: one with code as it should be at the start of the chapter (so that you can jump in at any point) and one with code as it should be at the end of the chapter (so you can compare yours with it).
+Only chapters 2, 3, 4, 5, and 6 have source code folders.
+To open in Flash Professional, just open the required folder and load the Visualizer.fla file.
+
+It should work in all versions from CS3 onwards. If there is a problem with the font, make sure you install the (included) pf_ronda_seven.ttf font file; this is needed for MinimalComponents to work. Make sure this font is visible in the FLA's library -- if it's not, close Flash, re-install the font, and try again.
+
+If you're using Flash CS4 or above, you may get an error saying something like "Unable to transcode /assets/pf_ronda_seven.ttf" when you try to compile.
+To solve this, do the following:
+ - Delete the src/com/bit101 folder and all of its contents
+ - Remove the pf_ronda_seven font from the FLA's library (in Flash Pro, open the Library panel, right-click the font, and press Delete)
+ - In Flash, click File > Publish Settings, then next to the "Script: ActionScript 3.0" box, click "Settings...", then click the "Library path" tab, then click the little + sign and in the new box that appears type ".\lib\MinimalComps_0_9_5.swc".
+ - Save the FLA and attempt to compile again.
+ 
+Problem? Contact me through my site: michaeljameswilliams.com.

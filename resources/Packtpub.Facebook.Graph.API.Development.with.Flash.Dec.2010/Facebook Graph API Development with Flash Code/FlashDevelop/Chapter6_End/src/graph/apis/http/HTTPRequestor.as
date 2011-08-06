@@ -1,0 +1,345 @@
+package graph.apis.http
+{
+	import events.DialogEvent;
+	import events.RequestEvent;
+	import flash.events.DataEvent;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.HTTPStatusEvent;
+	import flash.events.IEventDispatcher;
+	import flash.events.IOErrorEvent;
+	import flash.events.SecurityErrorEvent;
+	import flash.external.ExternalInterface;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
+	import flash.net.URLVariables;
+	import flash.net.URLRequestMethod;
+	import flash.utils.Dictionary;
+	import graph.apis.base.IRequestor;
+	import graph.apis.base.PublishObject;
+	import graph.BaseGraphItem;
+	import graph.GraphList;
+	import graph.GraphObject;
+	import graph.GraphRequest;
+	import com.adobe.serialization.json.JSON;
+	
+	//the class needs to dispatch events
+	public class HTTPRequestor extends EventDispatcher implements IRequestor
+	{
+		public var accessToken:String = "";
+		
+		//this is used to figure out which GraphRequest created each loader
+		private var _requests:Dictionary = new Dictionary();
+		
+		public function HTTPRequestor(target:IEventDispatcher = null)
+		{
+			//this is needed because the class extends EventDispatcher
+			super(target);
+			
+			ExternalInterface.addCallback("setAccessToken", setAccessToken);
+			
+			ExternalInterface.call("function() {"
+				+ "window.setAccessToken = function(hashValue){"
+				+ 	"var visualizer = document.getElementById('Visualizer');"
+				+ 	"visualizer.setAccessToken(hashValue);"
+				+ "}"
+			+ "}");
+		}
+		
+		public function initialize():void
+		{
+			dispatchEvent(new Event(Event.COMPLETE));
+		}
+		
+		public function request(a_request:GraphRequest):void
+		{
+			var loader:URLLoader = new URLLoader();
+			var urlRequest:URLRequest = new URLRequest();
+			var variables:URLVariables = new URLVariables();
+			
+			//We construct a URL from the parameters of the GraphRequest
+			urlRequest.url = "https://graph.facebook.com/" + a_request.objectID;
+			if (a_request.connectionID)
+			{
+				//remember, this means a connection (and thus a list)
+				//was requested
+				urlRequest.url += "/" + a_request.connectionID;
+			}
+			
+			variables.metadata = 1;
+			variables.limit = a_request.limit;
+			variables.offset = a_request.offset;
+			variables.since = a_request.since;
+			variables.until = a_request.until;
+			if (accessToken != "")
+			{
+				variables.access_token = accessToken;
+			}
+			urlRequest.data = variables;
+			
+			//this is used to figure out which GraphRequest created the loader later
+			_requests[loader] = a_request;
+			
+			loader.addEventListener(Event.COMPLETE, onGraphDataLoadComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			loader.load(urlRequest);
+		}
+		
+		public function search(a_query:String = "", a_type:String = "", a_userID:String = ""):void
+		{
+			var loader:URLLoader = new URLLoader();
+			var urlRequest:URLRequest = new URLRequest();
+			var variables:URLVariables = new URLVariables();
+			
+			if (a_type == "home")
+			{
+				urlRequest.url = "https://graph.facebook.com/me/home";
+			}
+			else if ((a_type == "feed") && (a_userID != ""))
+			{
+				urlRequest.url = "https://graph.facebook.com/";
+				urlRequest.url += a_userID + "/";
+				urlRequest.url += "feed";
+			}
+			else
+			{
+				urlRequest.url = "https://graph.facebook.com/search";
+			}
+			
+			variables.metadata = 1;
+			if (accessToken != "")
+			{
+				variables.access_token = accessToken;
+			}
+			variables.q = a_query;		//not variables.query!
+			variables.type = a_type;
+			urlRequest.data = variables;
+			
+			loader.addEventListener(Event.COMPLETE, onGraphSearchComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			loader.load(urlRequest);
+		}
+		
+		private function onGraphSearchComplete(a_event:Event):void
+		{
+			var loader:URLLoader = a_event.target as URLLoader;
+			var graphData:String = loader.data;
+			var decodedJSON:Object = JSON.decode(graphData);
+			
+			if (decodedJSON.data)
+			{
+				var graphList:GraphList = new GraphList();
+				var childGraphObject:GraphObject;
+				for each (var childObject:Object in decodedJSON.data)
+				{
+					childGraphObject = new GraphObject();
+					for (var childKey:String in childObject)
+					{
+						childGraphObject[childKey] = childObject[childKey];
+					}
+					graphList.addToList(childGraphObject);
+				}
+				graphList.paging = decodedJSON.paging;
+				
+				dispatchEvent(new RequestEvent(RequestEvent.REQUEST_COMPLETED, graphList));
+			}
+		}
+		
+		private function onIOError(a_event:IOErrorEvent):void
+		{
+			trace(a_event.text);
+		}
+		
+		private function onGraphDataLoadComplete(a_event:Event):void
+		{
+			var loader:URLLoader = a_event.target as URLLoader;
+			var graphData:String = loader.data;
+			var decodedJSON:Object = JSON.decode(graphData);
+			
+			//we find the original GraphRequest used to start the loader
+			var originalRequest:GraphRequest = _requests[loader] as GraphRequest;
+			
+			if (decodedJSON.data)
+			{
+				var graphList:GraphList = new GraphList();
+				var childGraphObject:GraphObject;
+				for each (var childObject:Object in decodedJSON.data)
+				{
+					childGraphObject = new GraphObject();
+					for (var childKey:String in childObject)
+					{
+						childGraphObject[childKey] = childObject[childKey];
+					}
+					graphList.addToList(childGraphObject);
+				}
+				graphList.paging = decodedJSON.paging;
+				
+				//we use the properties of the original GraphRequest to add
+				//some extra data to the GraphList itself
+				graphList.ownerID = originalRequest.objectID;
+				graphList.connectionType = originalRequest.connectionID;
+				
+				//since this class does not have a renderGraphList() method, we dispatch an
+				//event, which CustomGraphContainerController will listen for, and call its
+				//own renderGraphList() method
+				dispatchEvent(new RequestEvent(RequestEvent.REQUEST_COMPLETED, graphList));
+			}
+			else
+			{
+				var graphObject:GraphObject = new GraphObject();
+				for (var key:String in decodedJSON)
+				{
+					graphObject[key] = decodedJSON[key];
+				}
+				
+				//since this class does not have a renderGraphList() method, we dispatch an
+				//event, which CustomGraphContainerController will listen for, and call its
+				//own renderGraphList() method
+				dispatchEvent(new RequestEvent(RequestEvent.REQUEST_COMPLETED, graphObject));
+			}
+		}
+		
+		public function attemptToAuthenticate(...permissions):void
+		{
+			var scope:String = "";
+			if (permissions.length > 0)
+			{
+				scope = "&scope=" + permissions.join(",");
+			}
+			ExternalInterface.call("window.open",
+				"https://graph.facebook.com/oauth/authorize?client_id=«redacted»&type=user_agent&redirect_uri=http://gamedev.michaeljameswilliams.com/scrap/visualizer/callback.html"
+				+ scope,
+				"facebookLoginWindow",
+				"height=370, width=600");
+		}
+		
+		private function onAuthenticationComplete(a_event:Event):void
+		{
+			var loader:URLLoader = URLLoader(a_event.target);
+		}
+		
+		private function setAccessToken(a_hashValue:String):void
+		{
+			var hashParams:Array = a_hashValue.substr(1).split("&");
+			var hashKeyAndValue:Array;
+			
+			for (var i:int = 0; i < hashParams.length; i++)
+			{
+				hashKeyAndValue = (hashParams[i] as String).split("=");
+				if (hashKeyAndValue[0] == "access_token")
+				{
+					this.accessToken = hashKeyAndValue[1];
+					break;
+				}
+			}
+			this.request(new GraphRequest("me"));
+		}
+		
+		public function publish(a_publishObject:PublishObject):void
+		{
+			var actionObj:Object = [ {
+				name:"Visit my Twitter Page",
+				link:"http://twitter.com/MichaelJW"
+			} ];
+			var actionString:String = JSON.encode(actionObj);
+			
+			var privacyObj:Object = {
+				value:"ALL_FRIENDS"
+			}
+			var privacyString:String = JSON.encode(privacyObj);
+			
+			var loader:URLLoader = new URLLoader();
+			var urlRequest:URLRequest = new URLRequest();
+			var variables:URLVariables = new URLVariables();
+			
+			urlRequest.url = "https://graph.facebook.com/";
+			urlRequest.url += a_publishObject.ownerID;
+			urlRequest.url += "/" + a_publishObject.connectionType;
+			urlRequest.method = URLRequestMethod.POST;
+			
+			if (this.accessToken != "")
+			{
+				variables.access_token = this.accessToken;
+			}
+			
+			if (a_publishObject.connectionType == "feed")
+			{
+				variables.message = a_publishObject.message;
+				variables.picture = a_publishObject.pictureURL;
+				variables.link = a_publishObject.linkURL;
+				variables.name = a_publishObject.linkName;
+				variables.caption = a_publishObject.caption;
+				variables.description = a_publishObject.description;
+				variables.actions = actionString;
+				variables.privacy = privacyString;
+				urlRequest.data = variables;
+
+				loader.addEventListener(Event.COMPLETE, onPublishComplete);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+				loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHTTPStatusReturned);
+				loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+				loader.load(urlRequest);
+			}
+			else if (a_publishObject.connectionType == "photos")
+			{
+				variables.message = a_publishObject.message;
+				variables.source = a_publishObject.source;
+				urlRequest.data = variables;
+				a_publishObject.source.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onPublishComplete);
+				a_publishObject.source.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+				a_publishObject.source.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHTTPStatusReturned);
+				a_publishObject.source.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+				a_publishObject.source.upload(urlRequest);
+			}
+		}
+		
+		private function onSecurityError(a_event:SecurityErrorEvent):void
+		{
+			dispatchEvent(new DialogEvent(DialogEvent.DIALOG, "Security error: " + a_event.text));
+		}
+		
+		private function onHTTPStatusReturned(a_event:HTTPStatusEvent):void
+		{
+			if ((a_event.status != 0) && (a_event.status != 200))
+			{
+				dispatchEvent(new DialogEvent(DialogEvent.DIALOG, "HTTP status: " + a_event.status));
+			}
+		}
+		
+		private function onPublishComplete(a_event:Event):void
+		{
+			dispatchEvent(new DialogEvent(DialogEvent.DIALOG, "Publish complete!"));
+		}
+		
+		public function deleteObject(a_objectID:String):void
+		{
+			var loader:URLLoader = new URLLoader();
+			var urlRequest:URLRequest = new URLRequest();
+			var variables:URLVariables = new URLVariables();
+			
+			urlRequest.url = "https://graph.facebook.com/";
+			urlRequest.url += a_objectID;
+			urlRequest.method = URLRequestMethod.POST;
+			
+			if (this.accessToken != "")
+			{
+				variables.access_token = this.accessToken;
+			}
+			variables.method = "delete";
+			urlRequest.data = variables;
+			
+			loader.addEventListener(Event.COMPLETE, onDeleteComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHTTPStatusReturned);
+			loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+			loader.load(urlRequest);
+		}
+		
+		private function onDeleteComplete(a_event:Event):void
+		{
+			dispatchEvent(new DialogEvent(DialogEvent.DIALOG, "Deleted!"));
+		}
+
+	}
+
+}

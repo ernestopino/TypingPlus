@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   applicationComplete="init()"
+					   showStatusBar="true"
+					   currentState="Login" viewSourceURL="srcview/index.html">
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" gap="20" paddingTop="20"/>
+	</s:layout>
+	
+	<s:states>
+		<s:State name="Login"/>
+		<s:State name="Main"/>
+	</s:states>	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.facebook.graph.FacebookDesktop;
+			
+			private var appID:String = "137660269655872";
+			
+			private function init():void {
+				FacebookDesktop.init(appID, handleLogin);
+				status = "Please log in";
+			}
+			
+			private function doLogin():void {
+				FacebookDesktop.login(handleLogin, []);
+			}			
+			
+			private function handleLogin(session:Object, fail:Object):void {
+				if (session != null) {
+					status = "Successfully Logged In";
+					currentState = "Main";
+				}
+			}
+			
+			private function sayHello():void {
+				output.text = "Hello " + FacebookDesktop.getSession().user.name; 
+			}
+		]]>
+	</fx:Script>
+
+	<s:Button label="1. Login to Facebook" click="doLogin()" enabled.Main="false"/>
+	<s:Button label="2. Say Hello" id="sayHelloBtn" click="sayHello()" includeIn="Main"/>
+	<s:Label text="Hello" id="output" includeIn="Main"/>
+	
+</s:WindowedApplication>

@@ -1,0 +1,5 @@
+There are two folders for each chapter: one with code as it should be at the start of the chapter (so that you can jump in at any point) and one with code as it should be at the end of the chapter (so you can compare yours with it).
+Only chapters 2, 3, 4, 5, and 6 have source code folders.
+To open in Flash Builder, first load Flash Builder itself, then click File > Import Flex Project. In the dialog that appears, select "Project folder" and browse to the main folder you're interested in (e.g. \Chapter2_Start\). Click Finish.
+In order to compile the project, you may need to expand the \src\(default package)\ folders, right-click "Main.as", and select "Set as Default Application".
+Problem? Contact me through my site: michaeljameswilliams.com.
